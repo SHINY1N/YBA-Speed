@@ -210,7 +210,7 @@ mouse.Move:connect(function()
 	end
 end)
 --Looped Runservice
-print("EXPLOIT RUNNING! Made by SHINY N#2010)
+print("EXPLOIT RUNNING! Made by SHINY N#2010")
 UIS.InputBegan:connect(function(input)
 	local i = input.KeyCode
 	if noclip == true then
