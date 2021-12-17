@@ -1,0 +1,236 @@
+--Define basics
+local player = game:GetService("Players").LocalPlayer
+local mouse = player:GetMouse()
+local UIS = game:GetService("UserInputService")
+local char = player.Character
+local playerGui = player.PlayerGui
+--Variables
+local uiOpened = true
+local walkSpeed =15 
+local changingWalkSpeed = false
+local jumpPower = 50
+local changingJumpPower = false
+
+--MakeUI functions
+local g = Instance.new("ScreenGui")
+g.ResetOnSpawn = false
+g.Name = tostring(math.random(1.0005, 99999.9999))
+g.Parent = playerGui
+g.DisplayOrder = 99
+makeBaseDragUI = function(size, pos, topName)
+	local origSize = size
+	local frame = Instance.new("Frame", g)
+	frame.BorderSizePixel = 0
+	frame.BackgroundTransparency = .3
+	frame.BackgroundColor3 = Color3.new(0, 0, 0)
+	frame.Size = size
+	frame.Position = pos
+	local tn = Instance.new("TextButton", frame)
+	tn.Name = "tn"
+	tn.Size = UDim2.new(.9, 0, .15, 0)
+	tn.Text = topName
+	tn.TextScaled = true
+	tn.TextStrokeTransparency = 0
+	tn.BackgroundTransparency = .9
+	tn.TextColor3 = BrickColor.new("Royal purple").Color
+	tn.Font = Enum.Font.Fantasy
+	local ty = Instance.new("TextButton", frame)
+	ty.Name = "tx"
+	ty.Size = UDim2.new(.1, 0, .15, 0)
+	ty.Position = UDim2.new(.9, 0, 0, 0)
+	ty.Text = "+"
+	ty.TextScaled = true
+	ty.TextStrokeTransparency = 0
+	ty.BackgroundTransparency = .9
+	ty.TextColor3 = BrickColor.new("Forest green").Color
+	ty.Font = Enum.Font.Fantasy
+	local mainFrame = Instance.new("Frame", frame)
+	mainFrame.BorderSizePixel = 0
+	mainFrame.Visible = false
+	mainFrame.BackgroundTransparency = .9
+	mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+	mainFrame.Size = UDim2.new(1, 0, .85, 0)
+	mainFrame.Position = UDim2.new(0, 0, .15, 0)
+	local minimise = false
+	local dragging = false
+	mouse.Move:connect(function()
+		if dragging == true then
+			frame.Position =  UDim2.new(-frame.Size.X.Scale/2, mouse.X, -frame.Size.X.Scale*.05, mouse.Y)
+		end
+	end)
+	tn.MouseButton1Down:connect(function()
+		dragging = true
+	end)
+	tn.MouseButton1Up:connect(function()
+		dragging = false
+	end)
+	ty.MouseButton1Click:connect(function()
+		if minimise == false then
+			frame:TweenSize(UDim2.new(frame.Size.X.Scale, 0, .05, 0), "Out", "Linear", .4, true)
+			tn:TweenSize(UDim2.new(.9, 0, 1, 0), "Out", "Linear", .4, true)
+			ty:TweenSize(UDim2.new(.1, 0, 1, 0), "Out", "Linear", .4, true)
+			mainFrame.Visible = false
+			minimise = true
+			ty.Text = "+"
+			ty.TextColor3 = BrickColor.new("Forest green").Color
+		else
+			frame:TweenSize(origSize, "Out", "Linear", .4, true)
+			tn:TweenSize(UDim2.new(.9, 0, .15, 0), "Out", "Linear", .4, true)
+			ty:TweenSize(UDim2.new(.1, 0, .15, 0), "Out", "Linear", .4, true)
+			mainFrame.Visible = true
+			minimise = false
+			ty.Text = "_"
+			ty.TextColor3 = BrickColor.new("Brick yellow").Color
+		end
+	end)
+	frame:TweenSize(UDim2.new(frame.Size.X.Scale, 0, .05, 0), "Out", "Linear", .4, true)
+	tn:TweenSize(UDim2.new(.9, 0, 1, 0), "Out", "Linear", .4, true)
+	ty:TweenSize(UDim2.new(.1, 0, 1, 0), "Out", "Linear", .4, true)
+	minimise = true
+	
+	return mainFrame
+end
+makeSlider = function(parent, size, pos)
+	local f = makeFrame(parent, size, pos, 8)
+	f.Name = "outerFrame"
+	local innerFrame = makeFrame(f, UDim2.new(1, 0, .1, 0), UDim2.new(0, 0, .5, 0), .4)
+	innerFrame.Name = "innerFrame"
+	local drag = makeButton(innerFrame, UDim2.new(.05, 0, 5, 0), UDim2.new(f.Position.X.Scale+ .1, 0, -2.5, 0), "", Color3.new(0, 0, 0), BrickColor.new("Royal purple").Color, 0)
+	drag.Name = "dragFrame"
+	return drag
+end
+makeButton = function(parent, size, pos, text, tcolor, bgColor, bgTransparency)
+	local button = Instance.new("TextButton", parent)
+	button.Size = size
+	button.BackgroundTransparency = bgTransparency
+	button.BorderSizePixel = 0
+	button.Text = text
+	button.TextStrokeTransparency = 0
+	button.TextColor3 = tcolor
+	button.Position = pos
+	button.Font = Enum.Font.Fantasy
+	button.BackgroundColor3 = bgColor
+	button.TextScaled = true
+	return button
+end
+makeLabel = function(parent, size, pos, text, tcolor, bgColor, bgTransparency)
+	local label = Instance.new("TextLabel", parent)
+	label.Size = size
+	label.BackgroundTransparency = bgTransparency
+	label.BorderSizePixel = 0
+	label.Text = text
+	label.TextStrokeTransparency = 0
+	label.TextColor3 = tcolor
+	label.Position = pos
+	label.Font = Enum.Font.Fantasy
+	label.BackgroundColor3 = bgColor
+	label.TextScaled = true
+	return label
+end
+makeFrame = function(parent, size, pos, bgTransparency)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = size
+	frame.BorderSizePixel = 0
+	frame.BackgroundTransparency = bgTransparency
+	frame.Position = pos
+	frame.BackgroundColor3 = Color3.new(0, 0, 0)
+	return frame
+end
+--Functions
+--WALKSPEED FUNCTION
+local walkSpeed = makeBaseDragUI(UDim2.new(.2, 0, .4, 0), UDim2.new(.65, 0, .25, 0), "Walkspeed")
+walkSpeedSlider = makeSlider(walkSpeed, UDim2.new(1, 0, .2, 0), UDim2.new(0, 0, .4, 0))
+local walkSpeedLabel = makeLabel(walkSpeed, UDim2.new(1, 0, .2, 0), UDim2.new(0, 0, .2, 0), "Walkspeed: 16", BrickColor.new("Royal purple").Color, Color3.new(0, 0, 0), .8)
+local dragging = false
+local pos = mouse.X
+walkSpeedSlider.MouseButton1Down:connect(function()
+	dragging = true
+	pos = mouse.X
+end)
+walkSpeedSlider.MouseButton1Up:connect(function()
+	dragging = false
+end)
+local walkspeed = 16
+mouse.Move:connect(function()
+	if dragging == true then
+		local f = walkSpeedSlider.Parent.Parent
+		local newPos = mouse.X
+		local diff = newPos - pos
+		pos = mouse.X
+		local max = mouse.ViewSizeX
+		local scaleDiff = (diff/max)
+		local leftBarrier = f.Position.X.Scale--(f.Size.X.Scale/2)
+		local rightBarrier = f.Position.X.Scale+(f.Size.X.Scale*.95)
+		local dragPos = walkSpeedSlider.Position.X.Scale + (scaleDiff*5)
+		if(dragPos > leftBarrier and dragPos < rightBarrier) then
+			walkSpeedSlider.Position = UDim2.new(dragPos, 0, walkSpeedSlider.Position.Y.Scale, 0)
+		else
+			dragging = false
+		end
+		local finalPos = (-(f.Size.X.Scale/2)+walkSpeedSlider.Position.X.Scale)*2
+		changingWalkSpeed = true
+		walkSpeed = math.floor(116 + (finalPos*100))
+		walkSpeedLabel.Text = "Walkspeed: "..tostring(walkSpeed)
+	end
+end)
+--JUMPPOWER FUNCTION
+local jumpPowerF = makeBaseDragUI(UDim2.new(.2, 0, .4, 0), UDim2.new(.65, 0, .3, 0), "Jump Power")
+jumpPowerSlider = makeSlider(jumpPowerF, UDim2.new(1, 0, .2, 0), UDim2.new(0, 0, .4, 0))
+local jumpPowerLabel = makeLabel(jumpPowerF, UDim2.new(1, 0, .2, 0), UDim2.new(0, 0, .2, 0), "Jump Power: 16", BrickColor.new("Royal purple").Color, Color3.new(0, 0, 0), .8)
+local dragging = false
+local pos = mouse.X
+local jumpPower = 50
+jumpPowerSlider.MouseButton1Down:connect(function()
+	dragging = true
+	pos = mouse.X
+end)
+jumpPowerSlider.MouseButton1Up:connect(function()
+	dragging = false
+end)
+mouse.Move:connect(function()
+	if dragging == true then
+		local f = jumpPowerSlider.Parent.Parent
+		local newPos = mouse.X
+		local diff = newPos - pos
+		pos = mouse.X
+		local max = mouse.ViewSizeX
+		local scaleDiff = (diff/max)
+		local leftBarrier = f.Position.X.Scale--(f.Size.X.Scale/2)
+		local rightBarrier = f.Position.X.Scale+(f.Size.X.Scale*.95)
+		local dragPos = jumpPowerSlider.Position.X.Scale + (scaleDiff*5)
+		if(dragPos > leftBarrier and dragPos < rightBarrier) then
+			jumpPowerSlider.Position = UDim2.new(dragPos, 0, jumpPowerSlider.Position.Y.Scale, 0)
+		else
+			dragging = false
+		end
+		local finalPos = (-(f.Size.X.Scale/2)+jumpPowerSlider.Position.X.Scale)*2
+		changingJumpPower = true
+		jumpPower = math.floor(150 + (finalPos*100))
+		jumpPowerLabel.Text = "Jump Power: "..tostring(jumpPower)
+	end
+end)
+--Looped Runservice
+print("EXPLOIT RUNNING! Made by SHINY N#2010)
+UIS.InputBegan:connect(function(input)
+	local i = input.KeyCode
+	if noclip == true then
+		if i == Enum.KeyCode.N then
+			char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame* CFrame.new(0, -5, 0)
+		elseif i == Enum.KeyCode.M then
+			char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame* CFrame.new(0, 5, 0)
+		end
+	end
+end)
+game:GetService("RunService").RenderStepped:connect(function()
+	char = player.Character
+	char.Humanoid.AutoRotate = true
+	--WS
+	if changingWalkSpeed == true then
+		char.Humanoid.WalkSpeed = walkSpeed
+	end
+	--JP
+	if changingJumpPower == true then
+		char.Humanoid.JumpPower = jumpPower
+	end
+
+					end)
